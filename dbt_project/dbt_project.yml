@@ -11,12 +11,18 @@ clean-targets:
   - "target"
   - "dbt_packages"
 
+vars:
+  breakout_min_stars: 10
+  stars_reconcile_tolerance: 0
+
 models:
   oss_pulse:
     staging:
       +materialized: view
     intermediate:
       +materialized: view
+    marts:
+      +materialized: table
 
 snapshots:
   oss_pulse:

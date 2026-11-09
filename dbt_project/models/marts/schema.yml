@@ -1,0 +1,132 @@
+version: 2
+
+models:
+  - name: dim_repo
+    description: One current descriptive row per repository seen in GitHub or Hacker News data.
+    columns:
+      - name: repo_full_name
+        description: Repository owner and name, in owner/repository form.
+        data_tests:
+          - not_null
+          - unique
+      - name: language
+        description: Current primary language from the repository metadata snapshot.
+      - name: description
+        description: Current GitHub repository description.
+      - name: topics
+        description: Current GitHub topic labels.
+      - name: metadata_valid_from
+        description: Start timestamp of the current SCD Type 2 metadata version.
+      - name: metadata_valid_to
+        description: End timestamp of the current SCD Type 2 metadata version; null while current.
+      - name: first_activity_dt
+        description: First UTC date with an observed GitHub event.
+      - name: last_activity_dt
+        description: Most recent UTC date with an observed GitHub event.
+  - name: mart_repo_daily
+    description: Daily GitHub event fact enriched with current repository attributes.
+    columns:
+      - name: repo_full_name
+        description: Repository owner and name, in owner/repository form.
+        data_tests:
+          - not_null
+      - name: dt
+        description: UTC date of the GitHub activity.
+        data_tests:
+          - not_null
+      - name: stars
+        description: Daily WatchEvent count.
+        data_tests:
+          - not_null
+      - name: forks
+        description: Daily ForkEvent count.
+        data_tests:
+          - not_null
+      - name: pushes
+        description: Daily PushEvent count.
+        data_tests:
+          - not_null
+      - name: issues
+        description: Daily IssuesEvent count.
+        data_tests:
+          - not_null
+      - name: pull_requests
+        description: Daily PullRequestEvent count.
+        data_tests:
+          - not_null
+      - name: unique_actors
+        description: Distinct actors generating events for the repository that day.
+        data_tests:
+          - not_null
+  - name: mart_language_trends
+    description: Weekly totals of GitHub stars grouped by repository language.
+    columns:
+      - name: week_start
+        description: Monday date starting the UTC calendar week.
+        data_tests:
+          - not_null
+      - name: language
+        description: Repository primary language.
+        data_tests:
+          - not_null
+      - name: stars
+        description: Total WatchEvent count during the week.
+        data_tests:
+          - not_null
+  - name: mart_breakouts
+    description: Daily repository stars compared with the previous 14 calendar days.
+    columns:
+      - name: repo_full_name
+        description: Repository owner and name, in owner/repository form.
+        data_tests:
+          - not_null
+      - name: dt
+        description: UTC date being evaluated.
+        data_tests:
+          - not_null
+      - name: stars_today
+        description: WatchEvent count on the evaluated date, with inactive dates represented as zero.
+        data_tests:
+          - not_null
+      - name: stars_mean_14d
+        description: Mean daily stars across the 14 prior calendar days.
+      - name: stars_stddev_14d
+        description: Sample standard deviation of daily stars across the prior 14 days.
+      - name: stars_z_score
+        description: Standardized difference between today's stars and the prior 14-day mean.
+      - name: is_breakout
+        description: True when a full baseline exists, z-score is at least 3, and stars meet the configured minimum.
+        data_tests:
+          - not_null
+  - name: mart_hn_lead_lag
+    description: Repository star velocity in the 48 hours before and after each Hacker News mention.
+    columns:
+      - name: object_id
+        description: Unique Algolia identifier for the Hacker News mention.
+        data_tests:
+          - not_null
+          - unique
+      - name: repo_full_name
+        description: GitHub repository mentioned by the story.
+        data_tests:
+          - not_null
+      - name: mention_created_at
+        description: Timestamp of the Hacker News story.
+        data_tests:
+          - not_null
+      - name: stars_48h_before
+        description: WatchEvent count in the 48 hours preceding the mention.
+        data_tests:
+          - not_null
+      - name: stars_48h_after
+        description: WatchEvent count in the 48 hours starting at the mention.
+        data_tests:
+          - not_null
+      - name: star_velocity_before_per_day
+        description: Average daily star events in the preceding 48-hour window.
+        data_tests:
+          - not_null
+      - name: star_velocity_after_per_day
+        description: Average daily star events in the following 48-hour window.
+        data_tests:
+          - not_null
