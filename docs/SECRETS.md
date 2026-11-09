@@ -10,8 +10,8 @@ Terraform variables files, or dashboard source.
 | `R2_ACCESS_KEY_ID` | Production pipeline | Access key for an R2 S3 API token with read/write access to the OSS Pulse bucket. | Cloudflare dashboard → R2 → Manage R2 API Tokens; create a token scoped to the bucket. |
 | `R2_SECRET_ACCESS_KEY` | Production pipeline | Secret half of the R2 S3 API credentials. | Shown once when creating the R2 API token. Store it immediately. |
 | `R2_BUCKET` | Production pipeline | Name of the R2 bucket containing raw and quarantine Parquet data. | Terraform output `r2_bucket_name` after applying `infra/terraform`. |
-| `MOTHERDUCK_TOKEN` | Production pipeline | Token used by dbt-duckdb to connect to MotherDuck. | MotherDuck workspace → Settings / API tokens. |
-| `MOTHERDUCK_DATABASE` | Production pipeline | MotherDuck database name used by the `prod` dbt target. | Create or select the database in the MotherDuck UI. |
+| `MOTHERDUCK_TOKEN` | Production pipeline and dashboard deployment | Token used by dbt-duckdb and the Evidence MotherDuck connector. | MotherDuck workspace → Settings / API tokens. |
+| `MOTHERDUCK_DATABASE` | Production pipeline and dashboard deployment | MotherDuck database name used by the `prod` dbt target and Evidence source. | Create or select the database in the MotherDuck UI. |
 | `CLOUDFLARE_PAGES_API_TOKEN` | Dashboard deployment | Cloudflare API token for deploying the static site to Pages. Grant account-level Cloudflare Pages edit permissions. | Cloudflare dashboard → My Profile → API Tokens → create a custom token with Cloudflare Pages edit permissions. |
 | `CLOUDFLARE_ACCOUNT_ID` | Dashboard deployment | Cloudflare account identifier for Wrangler. | Cloudflare dashboard → account overview. |
 | `DISCORD_WEBHOOK_URL` | Optional production alerts | Incoming webhook URL for pipeline failure alerts. | In the target Discord channel, edit channel → Integrations → Webhooks → New Webhook. |
@@ -20,8 +20,10 @@ Terraform variables files, or dashboard source.
 `${{ github.token }}` and does not need to be configured as a repository
 secret. The metadata asset uses it for authenticated GitHub API requests.
 
-The pipeline runs with R2 and MotherDuck credentials. The Evidence project is
-currently a static landing page and does not query MotherDuck during its build.
+The pipeline runs with R2 and MotherDuck credentials. The production dashboard
+build queries MotherDuck and exports its source data into a static site; the
+credentials are used only during the build and are not exposed to site visitors.
+Local dashboard development defaults to the DuckDB file at `data/oss_pulse.duckdb`.
 Local CI runs against committed fixtures and needs no repository secrets.
 
 The Pages workflow deploys to the fixed project name `oss-pulse-dashboard`.

@@ -3,13 +3,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "evidence build",
-    "dev": "evidence dev",
+    "build": "node configure-source.js && evidence sources --strict && evidence build:strict",
+    "dev": "node configure-source.js && evidence sources --strict && evidence dev",
     "preview": "evidence preview"
   },
   "dependencies": {
     "@evidence-dev/core-components": "5.4.2",
+    "@evidence-dev/duckdb": "2.0.1",
     "@evidence-dev/evidence": "40.1.8",
+    "@evidence-dev/motherduck": "1.0.6",
     "@sveltejs/kit": "2.8.4",
     "@sveltejs/vite-plugin-svelte": "3.1.2",
     "autoprefixer": "10.4.20",

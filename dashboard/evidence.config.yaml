@@ -5,3 +5,6 @@ appearance:
 plugins:
   components:
     "@evidence-dev/core-components": {}
+  datasources:
+    "@evidence-dev/duckdb": {}
+    "@evidence-dev/motherduck": {}

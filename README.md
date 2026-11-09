@@ -28,6 +28,15 @@ you use. Local lake storage and DuckDB are the development defaults.
 Run `make lint` and `make test` before submitting changes. Additional workflow
 targets are listed in the Makefile.
 
+## Dashboard
+
+The Evidence dashboard reads `data/oss_pulse.duckdb` locally. Build the dbt
+models first, then run `npm ci` and `npm run dev` from `dashboard/`; use
+`npm run build` for the Cloudflare Pages static export. The DuckDB Python
+dependency is currently constrained below 1.5 to match Evidence's DuckDB
+connector. Rebuild any database created by DuckDB 2.x from the Parquet lake
+before using it with the dashboard.
+
 ## Project layout
 
 - `orchestration/` — Dagster assets and jobs

@@ -24,6 +24,9 @@ site/
 node_modules/
 dashboard/build/
 dashboard/.evidence/
+dashboard/node_modules/
+dashboard/sources/oss_pulse/connection.yaml
+dashboard/*.tgz
 
 # Terraform
 **/.terraform/

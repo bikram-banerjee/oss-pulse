@@ -16,6 +16,10 @@ jobs:
   deploy:
     name: Build and deploy dashboard
     runs-on: ubuntu-latest
+    env:
+      DBT_TARGET: prod
+      EVIDENCE_SOURCE__oss_pulse__token: ${{ secrets.MOTHERDUCK_TOKEN }}
+      EVIDENCE_SOURCE__oss_pulse__database: ${{ secrets.MOTHERDUCK_DATABASE }}
     environment:
       name: production
       url: ${{ steps.deploy.outputs.deployment-url }}

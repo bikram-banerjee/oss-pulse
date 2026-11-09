@@ -54,3 +54,29 @@ environment variables.
   accessible on the host.
 - Terraform can validate and plan without applying changes; R2 resources are
   created only after an explicit apply.
+
+## ADR-003: Static Evidence dashboard
+
+- **Status:** Accepted
+- **Date:** 2026-11-09
+
+### Context
+
+The dashboard must read local DuckDB during development and MotherDuck during
+production builds, while serving public pages without exposing warehouse
+credentials.
+
+### Decision
+
+Use Evidence.dev to generate static pages and source Parquet during the build.
+Select DuckDB or MotherDuck through `DBT_TARGET`; provide MotherDuck credentials
+only as build-time environment variables. Keep Python DuckDB below 1.5 so its
+database files remain readable by Evidence's current DuckDB connector.
+
+### Consequences
+
+- Cloudflare Pages serves static assets and does not need warehouse credentials.
+- Dashboard source queries are evaluated at build time and must be rebuilt to
+  reflect refreshed warehouse data.
+- Databases created by DuckDB 2.x must be rebuilt from the Parquet lake before
+  use with the current Evidence DuckDB connector.
