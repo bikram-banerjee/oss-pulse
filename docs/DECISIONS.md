@@ -27,3 +27,30 @@ transforms with dbt tests.
 - R2 and MotherDuck credentials remain environment-provided and are not
   committed.
 - Orchestration and transformation tooling can be exercised independently.
+
+## ADR-002: Local Docker and Terraform infrastructure
+
+- **Status:** Accepted
+- **Date:** 2026-11-09
+
+### Context
+
+The project needs a reproducible local Dagster runtime and an optional
+Cloudflare R2 bucket without requiring cloud resources for development.
+
+### Decision
+
+Package Dagster with a multi-stage, uv-based Docker image and run its webserver
+and daemon as separate Compose services. Persist Dagster state in a named
+volume and mount the local lake from `./data`. Reserve a `streaming` Compose
+profile for future services. Use Terraform with the Cloudflare provider to
+create the R2 bucket; provide account and API credentials only through
+environment variables.
+
+### Consequences
+
+- Local orchestration runs without R2 credentials or Terraform.
+- Dagster state persists across container restarts, while lake files remain
+  accessible on the host.
+- Terraform can validate and plan without applying changes; R2 resources are
+  created only after an explicit apply.

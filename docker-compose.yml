@@ -1,0 +1,90 @@
+services:
+  dagster-webserver:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - dagster-webserver
+      - --host
+      - 0.0.0.0
+      - --port
+      - "3000"
+      - --workspace
+      - /app/workspace.yaml
+    environment:
+      DAGSTER_HOME: /opt/dagster/dagster_home
+      LAKE_BACKEND: ${LAKE_BACKEND:-local}
+      LAKE_ROOT: /app/data/lake
+      DUCKDB_PATH: /app/data/oss_pulse.duckdb
+      DBT_TARGET: ${DBT_TARGET:-dev}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID:-}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:-}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:-}
+      R2_BUCKET: ${R2_BUCKET:-}
+      R2_ENDPOINT_URL: ${R2_ENDPOINT_URL:-}
+      MOTHERDUCK_TOKEN: ${MOTHERDUCK_TOKEN:-}
+      MOTHERDUCK_DATABASE: ${MOTHERDUCK_DATABASE:-}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      REPO_METADATA_TOP_N: ${REPO_METADATA_TOP_N:-50}
+    ports:
+      - "${DAGSTER_PORT:-3000}:3000"
+    volumes:
+      - dagster_home:/opt/dagster/dagster_home
+      - ./data:/app/data
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:3000/server_info', timeout=3)"
+      interval: 15s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  dagster-daemon:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command:
+      - dagster-daemon
+      - run
+      - --workspace
+      - /app/workspace.yaml
+    environment:
+      DAGSTER_HOME: /opt/dagster/dagster_home
+      LAKE_BACKEND: ${LAKE_BACKEND:-local}
+      LAKE_ROOT: /app/data/lake
+      DUCKDB_PATH: /app/data/oss_pulse.duckdb
+      DBT_TARGET: ${DBT_TARGET:-dev}
+      R2_ACCOUNT_ID: ${R2_ACCOUNT_ID:-}
+      R2_ACCESS_KEY_ID: ${R2_ACCESS_KEY_ID:-}
+      R2_SECRET_ACCESS_KEY: ${R2_SECRET_ACCESS_KEY:-}
+      R2_BUCKET: ${R2_BUCKET:-}
+      R2_ENDPOINT_URL: ${R2_ENDPOINT_URL:-}
+      MOTHERDUCK_TOKEN: ${MOTHERDUCK_TOKEN:-}
+      MOTHERDUCK_DATABASE: ${MOTHERDUCK_DATABASE:-}
+      DISCORD_WEBHOOK_URL: ${DISCORD_WEBHOOK_URL:-}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      REPO_METADATA_TOP_N: ${REPO_METADATA_TOP_N:-50}
+    volumes:
+      - dagster_home:/opt/dagster/dagster_home
+      - ./data:/app/data
+    depends_on:
+      dagster-webserver:
+        condition: service_healthy
+    restart: unless-stopped
+
+  streaming-placeholder:
+    image: python:3.11-slim
+    profiles:
+      - streaming
+    command:
+      - python
+      - -c
+      - print('The streaming profile is reserved for future services.')
+
+volumes:
+  dagster_home:

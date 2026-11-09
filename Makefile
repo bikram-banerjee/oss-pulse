@@ -17,7 +17,7 @@ dagster-dev:
 	uv run dagster dev -m orchestration
 
 up:
-	docker compose up --build
+	docker compose up --build -d
 
 down:
 	docker compose down
