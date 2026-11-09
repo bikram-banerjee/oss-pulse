@@ -1,0 +1,7 @@
+appearance:
+  default: light
+  switcher: true
+
+plugins:
+  components:
+    "@evidence-dev/core-components": {}

@@ -22,6 +22,8 @@ logs/
 .user.yml
 site/
 node_modules/
+dashboard/build/
+dashboard/.evidence/
 
 # Terraform
 **/.terraform/

@@ -1,0 +1,71 @@
+name: Production pipeline
+
+on:
+  schedule:
+    - cron: "15 * * * *"
+  workflow_dispatch:
+    inputs:
+      start_date:
+        description: First UTC date to backfill (inclusive, YYYY-MM-DD)
+        required: true
+        type: string
+      end_date:
+        description: Last UTC date to backfill (inclusive, YYYY-MM-DD)
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: production-pipeline
+  cancel-in-progress: false
+
+jobs:
+  materialize:
+    name: Ingest partitions and build production marts
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    env:
+      LAKE_BACKEND: r2
+      DBT_TARGET: prod
+      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+      R2_BUCKET: ${{ secrets.R2_BUCKET }}
+      R2_ENDPOINT_URL: https://${{ secrets.R2_ACCOUNT_ID }}.r2.cloudflarestorage.com
+      MOTHERDUCK_TOKEN: ${{ secrets.MOTHERDUCK_TOKEN }}
+      MOTHERDUCK_DATABASE: ${{ secrets.MOTHERDUCK_DATABASE }}
+      GITHUB_TOKEN: ${{ github.token }}
+      DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+      INPUT_START_DATE: ${{ inputs.start_date }}
+      INPUT_END_DATE: ${{ inputs.end_date }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Cache dbt packages
+        uses: actions/cache@v4
+        with:
+          path: dbt_project/dbt_packages
+          key: dbt-${{ runner.os }}-${{ hashFiles('dbt_project/packages.yml', 'dbt_project/dbt_project.yml') }}
+
+      - name: Install dependencies
+        run: uv sync --frozen
+
+      - name: Install dbt packages
+        run: uv run dbt deps --project-dir dbt_project --profiles-dir dbt_project
+
+      - name: Materialize partitions and build marts
+        run: uv run python -m scripts.materialize_pipeline

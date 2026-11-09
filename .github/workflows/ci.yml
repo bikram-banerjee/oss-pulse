@@ -1,0 +1,62 @@
+name: CI
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Lint, type-check, test, and build dbt
+    runs-on: ubuntu-latest
+    env:
+      LAKE_BACKEND: local
+      LAKE_ROOT: data/lake
+      DUCKDB_PATH: data/ci.duckdb
+      DBT_TARGET: dev
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+
+      - name: Cache dbt packages
+        uses: actions/cache@v4
+        with:
+          path: dbt_project/dbt_packages
+          key: dbt-${{ runner.os }}-${{ hashFiles('dbt_project/packages.yml', 'dbt_project/dbt_project.yml') }}
+
+      - name: Install dependencies
+        run: uv sync --frozen --all-groups
+
+      - name: Lint
+        run: uv run ruff check .
+
+      - name: Type-check
+        run: uv run mypy orchestration
+
+      - name: Run tests
+        run: uv run pytest
+
+      - name: Prepare fixture Parquet lake
+        run: uv run python -m scripts.seed_ci_lake
+
+      - name: Install dbt packages
+        run: uv run dbt deps --project-dir dbt_project --profiles-dir dbt_project
+
+      - name: Build dbt models and tests
+        run: uv run dbt build --project-dir dbt_project --profiles-dir dbt_project --target dev
