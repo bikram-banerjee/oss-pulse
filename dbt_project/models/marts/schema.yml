@@ -1,6 +1,28 @@
 version: 2
 
 models:
+  - name: mart_pipeline_health
+    description: Run-level execution status, duration, row counts, and error summaries for the dashboard.
+    columns:
+      - name: run_id
+        description: Dagster run identifier.
+        data_tests:
+          - not_null
+      - name: asset
+        description: Dagster asset key associated with the run.
+        data_tests:
+          - not_null
+      - name: status
+        description: Final Dagster run status.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values: [SUCCESS, FAILURE]
+      - name: recorded_at
+        description: Timestamp when the run-status sensor recorded the metric.
+        data_tests:
+          - not_null
   - name: dim_repo
     description: One current descriptive row per repository seen in GitHub or Hacker News data.
     columns:

@@ -1,21 +1,29 @@
 from datetime import UTC, datetime, timedelta
 
 from dagster import (
-    AssetCheckExecutionContext,
-    AssetCheckResult,
-    AssetKey,
     AssetSelection,
     Definitions,
-    MetadataValue,
     RunRequest,
     ScheduleEvaluationContext,
-    asset_check,
     define_asset_job,
     schedule,
 )
 
 from orchestration.gh_archive import raw_gh_events
 from orchestration.hn_algolia import raw_hn_stories
+from orchestration.observability import (
+    pipeline_metrics_failure_sensor,
+    pipeline_metrics_success_sensor,
+)
+from orchestration.quality import (
+    check_latest_gh_freshness,
+    gh_partition_has_rows,
+    gh_quarantine_ratio_below_2pct,
+    gh_raw_staging_rows_reconcile,
+    hn_partition_has_rows,
+    hn_quarantine_ratio_below_2pct,
+    repo_metadata_partition_has_rows,
+)
 from orchestration.repo_metadata import repo_metadata
 
 gh_archive_job = define_asset_job(
@@ -57,40 +65,21 @@ def repo_metadata_daily_schedule(context: ScheduleEvaluationContext) -> RunReque
     return RunRequest(partition_key=partition_date.isoformat())
 
 
-@asset_check(asset=raw_gh_events, name="latest_gh_partition_fresh", blocking=True)
-def latest_gh_partition_fresh(context: AssetCheckExecutionContext) -> AssetCheckResult:
-    materialized_partitions = context.instance.get_materialized_partitions(
-        AssetKey("raw_gh_events")
-    )
-    if not materialized_partitions:
-        return AssetCheckResult(
-            passed=False,
-            description="No GH Archive partitions have been materialized.",
-        )
-
-    latest_partition = max(materialized_partitions)
-    partition_start = datetime.strptime(latest_partition, "%Y-%m-%d-%H").replace(tzinfo=UTC)
-    age = datetime.now(UTC) - (partition_start + timedelta(hours=1))
-    stale = age > timedelta(hours=6)
-    return AssetCheckResult(
-        passed=not stale,
-        metadata={
-            "latest_partition": MetadataValue.text(latest_partition),
-            "partition_age_minutes": MetadataValue.int(max(0, int(age.total_seconds() // 60))),
-        },
-        description=(
-            f"Latest materialized GH partition {latest_partition} is "
-            f"{'stale' if stale else 'fresh'}."
-        ),
-    )
-
-
 defs = Definitions(
     assets=[raw_gh_events, raw_hn_stories, repo_metadata],
-    asset_checks=[latest_gh_partition_fresh],
+    asset_checks=[
+        check_latest_gh_freshness,
+        gh_partition_has_rows,
+        hn_partition_has_rows,
+        repo_metadata_partition_has_rows,
+        gh_quarantine_ratio_below_2pct,
+        hn_quarantine_ratio_below_2pct,
+        gh_raw_staging_rows_reconcile,
+    ],
     schedules=[
         gh_archive_hourly_schedule,
         hn_stories_daily_schedule,
         repo_metadata_daily_schedule,
     ],
+    sensors=[pipeline_metrics_success_sensor, pipeline_metrics_failure_sensor],
 )

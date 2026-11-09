@@ -38,3 +38,30 @@ sources:
             read_parquet('{{ env_var("LAKE_ROOT", "data/lake") }}/raw/repo_metadata/**/*.parquet',
             hive_partitioning = true, union_by_name = true)
             {% endif %}
+  - name: operations
+    description: Dagster pipeline execution metrics stored in the DuckDB warehouse.
+    schema: main
+    tables:
+      - name: pipeline_run_metrics
+        description: One operational record per asset materialization in each Dagster run.
+        columns:
+          - name: run_id
+            description: Dagster run identifier.
+          - name: asset
+            description: Dagster asset key.
+          - name: partition
+            description: Asset partition key, when the asset is partitioned.
+          - name: status
+            description: Final Dagster run status.
+          - name: duration_seconds
+            description: Elapsed asset step time in seconds.
+          - name: rows_in
+            description: Input rows observed by the ingestion asset.
+          - name: rows_valid
+            description: Valid rows written by the ingestion asset.
+          - name: rows_quarantined
+            description: Invalid rows quarantined by the ingestion asset.
+          - name: recorded_at
+            description: Timestamp when the run-status sensor recorded this metric.
+          - name: error_summary
+            description: Failure message, if the Dagster run failed.

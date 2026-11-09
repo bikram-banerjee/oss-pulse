@@ -38,6 +38,10 @@ models:
         description: UTC date partition from GH Archive.
         data_tests:
           - not_null
+      - name: hour
+        description: UTC hour partition from GH Archive.
+        data_tests:
+          - not_null
   - name: stg_hn_stories
     description: Hacker News stories with normalized GitHub repository links.
     columns:

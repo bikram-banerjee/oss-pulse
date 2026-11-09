@@ -6,7 +6,8 @@ with source as (
         repo,
         created_at,
         payload,
-        dt
+        dt,
+        hour
     from {{ source('raw', 'gh_events') }}
 )
 
@@ -17,5 +18,6 @@ select
     type as event_type,
     created_at,
     cast(dt as date) as dt,
+    cast(hour as integer) as hour,
     json(payload) as payload
 from source

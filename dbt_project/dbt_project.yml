@@ -27,3 +27,6 @@ models:
 snapshots:
   oss_pulse:
     +target_schema: snapshots
+
+on-run-start:
+  - "{{ ensure_pipeline_metrics_table() }}"
