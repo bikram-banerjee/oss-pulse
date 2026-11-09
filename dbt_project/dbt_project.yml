@@ -1,0 +1,23 @@
+name: oss_pulse
+version: "1.0.0"
+config-version: 2
+
+profile: oss_pulse
+
+model-paths: ["models"]
+test-paths: ["tests"]
+macro-paths: ["macros"]
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  oss_pulse:
+    staging:
+      +materialized: view
+    intermediate:
+      +materialized: view
+
+snapshots:
+  oss_pulse:
+    +target_schema: snapshots

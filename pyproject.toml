@@ -1,0 +1,54 @@
+[project]
+name = "oss-pulse"
+version = "0.1.0"
+description = "Open-source activity analytics and repository breakout detection"
+readme = "README.md"
+requires-python = ">=3.11,<3.12"
+dependencies = [
+    "boto3>=1.35",
+    "dagster>=1.10,<2",
+    "dagster-duckdb>=0.26,<2",
+    "dagster-webserver>=1.10,<2",
+    "dbt-duckdb>=1.9,<2",
+    "duckdb>=1.2",
+    "httpx>=0.28",
+    "pyarrow>=19",
+    "pydantic>=2.10",
+    "s3fs>=2025.2",
+    "tenacity>=9",
+]
+
+[dependency-groups]
+dev = [
+    "mypy>=1.15",
+    "pytest>=8.3",
+    "respx>=0.22",
+    "ruff>=0.11",
+]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+
+[tool.mypy]
+python_version = "3.11"
+strict = true
+files = ["orchestration"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+
+[[tool.mypy.overrides]]
+module = ["boto3", "boto3.*", "pyarrow", "pyarrow.*"]
+ignore_missing_imports = true
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+package = false

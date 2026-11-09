@@ -1,0 +1,20 @@
+version: 2
+
+snapshots:
+  - name: repo_metadata
+    description: SCD Type 2 history of language, description, and topics per GitHub repo.
+    columns:
+      - name: repo_full_name
+        description: Repository owner and name, in owner/repository form.
+        data_tests:
+          - not_null
+      - name: language
+        description: GitHub's detected primary programming language.
+      - name: description
+        description: Repository description from GitHub.
+      - name: topics
+        description: GitHub repository topics.
+      - name: dbt_valid_from
+        description: Timestamp when this version of repository metadata became valid.
+      - name: dbt_valid_to
+        description: Timestamp when this version was superseded; null for the current version.

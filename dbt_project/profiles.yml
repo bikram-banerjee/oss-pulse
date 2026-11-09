@@ -1,0 +1,25 @@
+oss_pulse:
+  target: dev
+  outputs:
+    dev:
+      type: duckdb
+      path: "{{ env_var('DUCKDB_PATH', 'data/oss_pulse.duckdb') }}"
+      schema: main
+      threads: 4
+      extensions:
+        - httpfs
+    prod:
+      type: duckdb
+      path: "md:{{ env_var('MOTHERDUCK_DATABASE') }}"
+      schema: main
+      threads: 4
+      motherduck_token: "{{ env_var('MOTHERDUCK_TOKEN') }}"
+      extensions:
+        - httpfs
+      secrets:
+        - type: s3
+          key_id: "{{ env_var('R2_ACCESS_KEY_ID') }}"
+          secret: "{{ env_var('R2_SECRET_ACCESS_KEY') }}"
+          endpoint: "{{ env_var('R2_ACCOUNT_ID') }}.r2.cloudflarestorage.com"
+          region: auto
+          url_style: path

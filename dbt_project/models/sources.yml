@@ -1,0 +1,40 @@
+version: 2
+
+sources:
+  - name: raw
+    description: Raw, validated data in the partitioned Parquet lake.
+    schema: main
+    tables:
+      - name: gh_events
+        description: Selected GitHub events, partitioned by UTC date and hour.
+        meta:
+          external_location: >-
+            {% if target.name == 'prod' %}
+            read_parquet('s3://{{ env_var("R2_BUCKET") }}/raw/gh_events/**/*.parquet',
+            hive_partitioning = true, union_by_name = true)
+            {% else %}
+            read_parquet('{{ env_var("LAKE_ROOT", "data/lake") }}/raw/gh_events/**/*.parquet',
+            hive_partitioning = true, union_by_name = true)
+            {% endif %}
+      - name: hn_stories
+        description: Hacker News stories, partitioned by UTC date.
+        meta:
+          external_location: >-
+            {% if target.name == 'prod' %}
+            read_parquet('s3://{{ env_var("R2_BUCKET") }}/raw/hn_stories/**/*.parquet',
+            hive_partitioning = true, union_by_name = true)
+            {% else %}
+            read_parquet('{{ env_var("LAKE_ROOT", "data/lake") }}/raw/hn_stories/**/*.parquet',
+            hive_partitioning = true, union_by_name = true)
+            {% endif %}
+      - name: repo_metadata
+        description: Daily cached GitHub repository metadata fetched by Dagster.
+        meta:
+          external_location: >-
+            {% if target.name == 'prod' %}
+            read_parquet('s3://{{ env_var("R2_BUCKET") }}/raw/repo_metadata/**/*.parquet',
+            hive_partitioning = true, union_by_name = true)
+            {% else %}
+            read_parquet('{{ env_var("LAKE_ROOT", "data/lake") }}/raw/repo_metadata/**/*.parquet',
+            hive_partitioning = true, union_by_name = true)
+            {% endif %}

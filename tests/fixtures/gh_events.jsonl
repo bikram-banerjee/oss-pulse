@@ -1,0 +1,5 @@
+{"id":"12345678901","type":"WatchEvent","actor":{"id":1,"login":"octocat"},"repo":{"id":42,"name":"octocat/hello-world"},"created_at":"2025-01-01T00:15:00Z","payload":{"action":"started"}}
+{"id":"12345678902","type":"PushEvent","actor":{"id":2,"login":"octo-dev"},"repo":{"id":43,"name":"octo-dev/project"},"created_at":"2025-01-01T00:30:00Z","payload":{"ref":"refs/heads/main","size":1}}
+{"id":"broken","type":"IssuesEvent","actor":{"id":3,"login":"octo-user"},"created_at":"2025-01-01T00:45:00Z","payload":{"action":"opened"}}
+{"id":"12345678903","type":"CreateEvent","actor":{"id":4,"login":"octo-user"},"repo":{"id":44,"name":"octo-user/ignored"},"created_at":"2025-01-01T00:50:00Z","payload":{}}
+not-json

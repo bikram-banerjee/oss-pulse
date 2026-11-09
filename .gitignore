@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+.mypy_cache/
+.pytest_cache/
+.ruff_cache/
+
+# Environment and credentials
+.env
+.env.*
+!.env.example
+
+# Local data and generated outputs
+data/lake/
+data/*.duckdb
+data/*.duckdb.wal
+target/
+dbt_packages/
+logs/
+.user.yml
+site/
+node_modules/
+
+# Terraform
+**/.terraform/
+*.tfstate
+*.tfstate.*
+crash.log
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/

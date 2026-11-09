@@ -1,0 +1,78 @@
+version: 2
+
+models:
+  - name: stg_gh_events
+    description: Flattened event, repository, and actor fields for analytics.
+    columns:
+      - name: id
+        description: Unique GitHub event identifier.
+        data_tests:
+          - not_null
+          - unique
+      - name: repo_full_name
+        description: Repository owner and name, in owner/repository form.
+        data_tests:
+          - not_null
+      - name: actor_login
+        description: GitHub login of the actor who generated the event.
+        data_tests:
+          - not_null
+      - name: event_type
+        description: GitHub event type retained by the ingestion pipeline.
+        data_tests:
+          - not_null
+          - accepted_values:
+              arguments:
+                values:
+                  - WatchEvent
+                  - ForkEvent
+                  - PushEvent
+                  - IssuesEvent
+                  - PullRequestEvent
+                  - ReleaseEvent
+      - name: created_at
+        description: Event creation time in UTC.
+        data_tests:
+          - not_null
+      - name: dt
+        description: UTC date partition from GH Archive.
+        data_tests:
+          - not_null
+  - name: stg_hn_stories
+    description: Hacker News stories with normalized GitHub repository links.
+    columns:
+      - name: object_id
+        description: Unique Algolia identifier for the Hacker News story.
+        data_tests:
+          - not_null
+          - unique
+      - name: title
+        description: Story title as returned by Algolia.
+      - name: url
+        description: Destination URL submitted with the story.
+      - name: author
+        description: Hacker News username of the story submitter.
+        data_tests:
+          - not_null
+      - name: points
+        description: Current Algolia story points.
+        data_tests:
+          - not_null
+      - name: num_comments
+        description: Current Algolia comment count.
+        data_tests:
+          - not_null
+      - name: created_at
+        description: Story creation timestamp in UTC.
+        data_tests:
+          - not_null
+      - name: fetched_at
+        description: Timestamp when this story was ingested.
+        data_tests:
+          - not_null
+      - name: dt
+        description: UTC date partition queried from Algolia.
+        data_tests:
+          - not_null
+      - name: github_repo
+        description: Linked GitHub owner/repository path when the URL is a GitHub repository.

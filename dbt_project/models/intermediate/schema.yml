@@ -1,0 +1,58 @@
+version: 2
+
+models:
+  - name: int_repo_daily_activity
+    description: Daily GitHub event counts and unique actors for each repository.
+    columns:
+      - name: repo_full_name
+        description: Repository owner and name, in owner/repository form.
+        data_tests:
+          - not_null
+      - name: dt
+        description: UTC date of the repository activity.
+        data_tests:
+          - not_null
+      - name: stars
+        description: Count of WatchEvent events for the repository and day.
+        data_tests:
+          - not_null
+      - name: forks
+        description: Count of ForkEvent events for the repository and day.
+        data_tests:
+          - not_null
+      - name: pushes
+        description: Count of PushEvent events for the repository and day.
+        data_tests:
+          - not_null
+      - name: issues
+        description: Count of IssuesEvent events for the repository and day.
+        data_tests:
+          - not_null
+      - name: pull_requests
+        description: Count of PullRequestEvent events for the repository and day.
+        data_tests:
+          - not_null
+      - name: unique_actors
+        description: Distinct event actors contributing to the repository and day.
+        data_tests:
+          - not_null
+  - name: int_hn_repo_mentions
+    description: Hacker News stories linked to GitHub repositories.
+    columns:
+      - name: object_id
+        description: Unique Algolia identifier for the Hacker News story.
+        data_tests:
+          - not_null
+          - unique
+      - name: repo_full_name
+        description: GitHub repository mentioned by the story.
+        data_tests:
+          - not_null
+      - name: created_at
+        description: Story creation timestamp in UTC.
+        data_tests:
+          - not_null
+      - name: dt
+        description: UTC partition date of the story.
+        data_tests:
+          - not_null
